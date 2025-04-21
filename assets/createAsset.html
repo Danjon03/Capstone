@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+ <html lang="en">
+ 
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Register Asset(s)</title>
+ 
+     <!-- External JavaScript file for API functions -->
+     <script src="../API_Functions/postRecords.js"></script>
+ 
+     <style>
+         /* Basic body styling */
+         body {
+             font-family: Arial, sans-serif;
+             background-color: #0d25dc;
+         }
+ 
+         /* Container for the form */
+         .form-container {
+             width: 80%;
+             max-width: 600px;
+             background: white;
+             padding: 10px;
+             margin-bottom: 20px;
+             border-radius: 5px;
+         }
+ 
+         /* Template title input field */
+         #template-title {
+             width: 100%;
+             font-size: 24px;
+             border: none;
+             outline: none;
+             border-bottom: 2px solid #ccc;
+         }
+ 
+         #template-title:focus {
+             border-bottom: 2px solid #007bff;
+         }
+ 
+         /* Button styles */
+         #newField-btn,
+         #clearFields-btn,
+         #saveTemplate-btn,
+         #clearSaved-btn {
+             margin-top: 10px;
+             cursor: pointer;
+             border: none;
+             padding: 5px 10px;
+         }
+ 
+         #newField-btn:hover,
+         #clearFields-btn:hover {
+             background-color: #bebcbcd1;
+         }
+ 
+         #saveTemplate-btn,
+         #clearSaved-btn {
+             background-color: #007bff;
+             color: white;
+         }
+ 
+         #saveTemplate-btn:hover,
+         #clearSaved-btn:hover {
+             background-color: #0056b3;
+         }
+ 
+         /* Output display styling */
+         .output-container {
+             width: 80%;
+             max-width: 600px;
+             background: white;
+             padding: 10px;
+         }
+ 
+         pre {
+             background: #f4f4f4;
+             padding: 10px;
+         }
+     </style>
+ </head>
+ 
+ <body>
+ 
+     <!-- Form container -->
+     <div class="form-container">
+         <input type="text" id="template-title" placeholder="Enter template title here">
+         <button id="newField-btn">Add New Field</button>
+         <button id="clearFields-btn">Clear Fields</button>
+ 
+         <!-- Dynamic input fields container -->
+         <div id="field-container"></div>
+ 
+         <button id="saveTemplate-btn">Save Assets</button>
+     </div>
+ 
+     <!-- Output display container -->
+     <!-- <div class="output-container">
+         <h3>Saved Forms:</h3>
+         <pre id="output"></pre>
+         <button id="clearSaved-btn">Clear Saved Forms</button>
+     </div> -->
+ 
+     <script>
+         document.addEventListener("DOMContentLoaded", function () {
+             // DOM Elements
+             const titleInput = document.getElementById("template-title");
+             const addNewFieldButton = document.getElementById("newField-btn");
+             const fieldsContainer = document.getElementById("field-container");
+             const clearFieldsButton = document.getElementById("clearFields-btn");
+             const saveTemplateButton = document.getElementById("saveTemplate-btn");
+             const outputDisplay = document.getElementById("output");
+             const clearSavedButton = document.getElementById("clearSaved-btn");
+ 
+             // Load existing forms from local storage (if any)
+             let templateTitles = JSON.parse(localStorage.getItem("templateTitles")) || [];
+ 
+             // Function to update output display with stored templates
+             // function updateOutput() {
+             //     outputDisplay.textContent = JSON.stringify(templateTitles, null, 2);
+             // }
+ 
+             // Initial rendering of saved templates (if available)
+             //updateOutput();
+ 
+             // Function to add new input field dynamically
+             addNewFieldButton.addEventListener("click", function () {
+                 const fieldCount = fieldsContainer.querySelectorAll(".form-field").length;
+ 
+                 // Limit field count to 100
+                 if (fieldCount >= 100) {
+                     alert("You may register up to 100 assets at one time. To register more assets, first submit current entries.");
+                     return;
+                 }
+ 
+                 // Create a new input field
+                 const newField = document.createElement("input");
+                 newField.type = "text";
+                 newField.placeholder = `Enter ${getOrdinal(fieldCount + 1)} Field Name`;
+                 newField.classList.add("form-field");
+                 fieldsContainer.appendChild(newField);
+             });
+ 
+             // Function to determine the correct ordinal suffix for numeric values (st, nd, rd, th)
+             function getOrdinal(n) {
+                 const suffixes = ["th", "st", "nd", "rd"];
+                 const v = n % 100;
+                 return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+             }
+ 
+             // Function to clear all fields
+             clearFieldsButton.addEventListener("click", function () {
+                 fieldsContainer.innerHTML = "";
+             });
+ 
+             // Function to save template data
+             saveTemplateButton.addEventListener("click", function () {
+                 const title = titleInput.value.trim();
+                 const fieldValues = Array.from(fieldsContainer.querySelectorAll(".form-field"))
+                     .map(field => field.value.trim())
+                     .filter(value => value !== ""); // Remove empty fields
+ 
+                 if (title || fieldValues.length > 0) {
+                     let templateObject = {
+                         title,
+                         timestamp: new Date().toLocaleString(), // Store timestamp in readable format
+                         userId: 0,
+                         fieldValues
+                     };
+ 
+                     // Store template object
+                     templateTitles.push(templateObject);
+                     //updateOutput();
+                     localStorage.setItem("templateTitles", JSON.stringify(templateTitles)); // Save to local storage
+ 
+                     // Clear input fields
+                     titleInput.value = "";
+                     fieldsContainer.innerHTML = "";
+ 
+                     // Send data to API
+                     postTemplate(templateObject);
+                 }
+             });
+ 
+             // Function to clear saved templates
+             // clearSavedButton.addEventListener("click", function () {
+             //     localStorage.removeItem("templateTitles"); // Remove from local storage
+             //     templateTitles = []; // Reset array
+             //     updateOutput(); // Update display
+             // });
+         });
+     </script>
+ 
+ </body>
+ </html>

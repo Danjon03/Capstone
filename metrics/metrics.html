@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- 
+python -m http.server 8080
+http://localhost:8080/metrics.html
+-->
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Metric Menu</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #222e86;
+            color: white;
+            height: 70px;
+            padding: 0 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .top-bar-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .top-bar-section.left {
+            justify-content: flex-start;
+        }
+
+        .top-bar-section.right {
+            justify-content: flex-end;
+        }
+
+        .top-title {
+            margin: 0;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .back-btn {
+            background-color: transparent;
+            color: white;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 6px 12px;
+        }
+
+        .logout-btn {
+            background-color: #9e1e1e;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 20px;
+        }
+
+        .metric-button-row {
+            position: fixed;
+            top: 70px;
+            /* directly under top bar (which is 70px high) */
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            background-color: #f4f4f4;
+            padding: 10px 0;
+            z-index: 999;
+            height: 40px;
+            border-bottom: 1px solid #b5b5b5;
+        }
+
+        .metric-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3e50d3;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .metric-btn:hover {
+            background-color: #222e86;
+        }
+
+        #view-container {
+            padding: 20px;
+            padding-top: 130px;
+            height: calc(100vh - 130px);
+            overflow-y: auto;
+        }
+
+        .placeholder-message {
+            text-align: center;
+            margin-top: 50px;
+            color: #444;
+        }
+
+        .placeholder-message h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .placeholder-message p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .reset-btn {
+            all: unset;
+            cursor: pointer;
+            font-size: 22px;
+            text-align: center;
+            color: inherit;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- top bar section -->
+    <div class="top-bar">
+        <div class="top-bar-section left">
+            <button class="back-btn" onclick="back()">← Back to Main Menu</button>
+        </div>
+
+        <div class="top-bar-section center">
+            <button class="top-title reset-btn" onclick="resetView()">Metric Menu</button>
+        </div>
+
+        <div class="top-bar-section right">
+            <button class="logout-btn">Log Out</button>
+        </div>
+    </div>
+
+    <!-- button row section -->
+    <div class="metric-button-row">
+        <button class="metric-btn" onclick="createMetric()">Create</button>
+        <button class="metric-btn" onclick="editMetric()">Edit</button>
+        <button class="metric-btn" onclick="fillMetric()">Fill</button>
+    </div>
+
+    <!-- dynamic view container -->
+    <div id="view-container"></div>
+
+    <script>
+
+        function createMetric()
+        {
+            window.location.href = "createMetric.html";
+        }
+
+        function fillMetric()
+        {
+            window.location.href = "fillMetric.html";
+        }
+
+        function editMetric()
+        {
+            window.location.href = "editMetric.html";
+        }
+
+        function back()
+        {
+            window.location.href = "../index.html"
+        }
+
+
+
+
+
+
+
+
+
+        // function navigateTo(page) {
+        //     window.location.href = page + ".html";
+        // }
+
+        // function loadView(viewName) {
+        //     fetch(`${viewName}.html`)
+        //         .then(response => response.text())
+        //         .then(html => {
+        //             document.getElementById('view-container').innerHTML = html;
+
+        //             // Dynamically load script based on view name
+        //             let scriptName = "";
+
+        //             if (viewName === "createMetric") {
+        //                 scriptName = "createMetric.js";
+        //             } else if (viewName === "editMetric") {
+        //                 scriptName = "editMetric.js";
+        //             } else if (viewName === "fillMetrics") {
+        //                 scriptName = "fillMetrics.js";
+        //             }
+
+        //             if (scriptName) {
+        //                 const script = document.createElement("script");
+        //                 script.src = scriptName;
+        //                 script.onload = () => {
+        //                     const initializer = window[`initialize${capitalize(viewName.replace(/s$/, ''))}`];
+        //                     if (typeof initializer === "function") {
+        //                         initializer();
+        //                     }
+        //                 };
+        //                 document.body.appendChild(script);
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error("Failed to load view:", error);
+        //         });
+        // }
+
+        // function capitalize(str) {
+        //     return str.charAt(0).toUpperCase() + str.slice(1);
+        // }
+
+        // function resetView() {
+        //     loadView('metricPlaceholder');
+        // }
+
+        // // Load welcome view on page load
+        // window.addEventListener('DOMContentLoaded', () => {
+        //     resetView();
+        // });
+    </script>
+
+</body>
+
+</html>

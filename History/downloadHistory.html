@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Template Selector</title>
+  <script src="../API_Functions/postRecords.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+    }
+    label, select, button {
+      display: block;
+      margin: 15px 0;
+    }
+    #actionButtons {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Select a Template</h2>
+
+  <label for="templateSelector">Choose Template:</label>
+  <select id="templateSelector">
+    <option value="">-- Select a Template --</option>
+  </select>
+
+  <div id="actionButtons">
+    <button id="downloadBtn">Download All Records</button>
+    <button id="viewRecordBtn">Select a Specific Record</button>
+  </div>
+
+  <script>
+    async function initializePage() {
+      const templateSelector = document.getElementById('templateSelector');
+      const actionButtons = document.getElementById('actionButtons');
+
+      try {
+        const templates = await getTemplates();
+
+        // Populate dropdown without forEach
+        for (let i = 0; i < templates.length; i++) {
+          const template = templates[i];
+          const option = document.createElement('option');
+          option.value = template._id;
+          option.textContent = template.title;
+          templateSelector.appendChild(option);
+        }
+
+        templateSelector.addEventListener('change', () => {
+          actionButtons.style.display = templateSelector.value ? 'block' : 'none';
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', async () => {
+          const selectedId = templateSelector.value;
+          if (!selectedId) return;
+
+          // Retrieve fresh templates to find the selected title
+          const allTemplates = await getTemplates();
+          const selectedTemplate = allTemplates.find(t => t._id === selectedId);
+          const title = selectedTemplate ? selectedTemplate.title : 'records';
+
+          // Fetch records for this template title
+          const records = await getRecordsbyTitle(title);
+          if (!records || records.length === 0) {
+            alert('No records found for this template.');
+            return;
+          }
+
+          // Determine unique headers from all record keys
+          const headerSet = {};
+          records.forEach(r => Object.keys(r).forEach(k => headerSet[k] = true));
+          const headers = Object.keys(headerSet);
+
+          // Build CSV content
+          const rows = [];
+          rows.push(headers.join(','));
+          records.forEach(record => {
+            const row = headers.map(h => {
+              let val = record[h] !== undefined ? record[h] : '';
+              if (typeof val === 'string') {
+                val = val.replace(/"/g, '""');
+                if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                  val = `"${val}"`;
+                }
+              }
+              return val;
+            });
+            rows.push(row.join(','));
+          });
+          const csvString = rows.join('\n');
+
+          // Trigger file download
+          const blob = new Blob([csvString], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${title}_records.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('viewRecordBtn').addEventListener('click', () => {
+          alert(`Select a record for template ID: ${templateSelector.value}`);
+        });
+
+      } catch (err) {
+        console.error("Error initializing page:", err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initializePage);
+  </script>
+</body>
+</html>

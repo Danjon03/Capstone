@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .login-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="API_Functions/postRecords.js"></script>
+
+    <!-- This is the form for the login information -->
+    <div class="login-container">
+        <h2>Login</h2>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" onclick="Login()">Login</button>
+    </div>
+    
+    <script>
+       //This function is called by the form when the login button is clicked
+        async function Login()
+        {
+            //get the username and password from the form
+            const username = document.querySelector('input[name="username"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            
+            //Validate user credentials
+            let result = await loginUser(username, password);
+
+            //Since 1000 is the response code for invalid login compare that for User auth
+            if (result.response == 1000) {
+                alert("Wrong Username or Password");
+            }
+            else
+            {
+                //create session cookie for newly logged in user
+                localStorage.setItem("loggedInUserID", result.response);
+                
+                //redirect to the menu page
+                window.location.href = "index.html";
+            }
+    
+        }
+    
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <title>Fill Asset Details</title>
+     <style>
+         body {
+             font-family: Arial, sans-serif;
+             background-color: #0d25dc;
+             padding: 20px;
+             color: white;
+         }
+         select, input, button {
+             display: block;
+             margin: 10px 0;
+             padding: 10px;
+             width: 100%;
+             max-width: 400px;
+         }
+         #form-area {
+             margin-top: 20px;
+             background: white;
+             color: black;
+             padding: 20px;
+             border-radius: 8px;
+             max-width: 500px;
+         }
+     </style>
+ </head>
+ <script src="../API_Functions/postRecords.js"></script>
+ <body>
+ 
+     <h2>Fill Asset Information</h2>
+ 
+     <label for="assetSelect">Select an Asset:</label>
+     <select id="assetSelect">
+         <option value="">-- Select an Asset --</option>
+     </select>
+ 
+     <div id="form-area"></div>
+ 
+ <script>
+ 
+ //Function to call database to getAllTemplates
+ async function getAllTemplates() {
+     return await getTemplates();
+ }
+ 
+ 
+ 
+ document.addEventListener("DOMContentLoaded", async function () {
+     const assetSelect = document.getElementById("assetSelect");
+     const formArea = document.getElementById("form-area");
+ 
+     // Load templates and populate dropdown
+     const templates = await getAllTemplates();
+ 
+     templates.forEach((template, index) => {
+         const option = document.createElement("option");
+         option.value = index;
+         option.textContent = template.title;
+         assetSelect.appendChild(option);
+     });
+ 
+     // Event listener for template selection
+     assetSelect.addEventListener("change", function () {
+         formArea.innerHTML = ""; // Clear previous form
+ 
+         const selectedIndex = this.value;
+         if (selectedIndex === "") return;
+ 
+         const selectedTemplate = templates[selectedIndex];
+ 
+         // Create a form element
+         const form = document.createElement("form");
+ 
+         selectedTemplate.fieldValues.forEach(field => {
+             const label = document.createElement("label");
+             label.textContent = field;
+ 
+             const input = document.createElement("input");
+             input.type = "text";
+             input.name = field;
+             input.placeholder = `Enter ${field}`;
+ 
+             form.appendChild(label);
+             form.appendChild(input);
+         });
+ 
+         const submitButton = document.createElement("button");
+         submitButton.textContent = "Submit";
+         submitButton.type = "submit";
+ 
+         form.appendChild(submitButton);
+         formArea.appendChild(form); // Append the form to the page
+ 
+         // Handle form submission
+         form.addEventListener("submit", function (e) {
+             e.preventDefault();
+             const jsonObject = {
+                 template: selectedTemplate.title, // Template name
+                 timestamp: new Date().toLocaleString(), // Readable date-time format
+                 userId: 0 // Default user ID
+             };
+ 
+             // Store fields at the same level
+             form.querySelectorAll("input").forEach(input => {
+                 jsonObject[input.name] = input.value;
+             });
+ 
+             console.log("Submitted Data:", jsonObject);
+             alert("Form submitted successfully!");
+ 
+             // Send the JSON object to the server
+             postRecords(jsonObject);
+ 
+             // Reset the page to its original state
+             resetPage();
+         });
+     });
+ 
+     // Function to reset the page
+     function resetPage() {
+         formArea.innerHTML = ""; // Clears the form
+         assetSelect.selectedIndex = 0; // Resets dropdown to default selection
+     }
+ });
+ </script>
+ 
+ </body>
+ </html>

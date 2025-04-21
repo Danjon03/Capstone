@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 60%;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .form-section {
+            flex: 1;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Ensures consistent sizing */
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background: #007BFF;
+            color: white;
+            border-radius: 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .permissions-container {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            width: 35%;
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-switch label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 20px;
+            transition: 0.4s;
+        }
+        .toggle-switch label:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+        .toggle-switch input:checked + label {
+            background-color: #007BFF;
+        }
+        .toggle-switch input:checked + label:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="container">
+            <h2>Create User</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <div class="form-section">
+                        <label for="firstName">First Name:</label>
+                        <input type="text" id="firstName" required>
+
+                        <label for="lastName">Last Name:</label>
+                        <input type="text" id="lastName" required>
+
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" required>
+
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" required>
+
+                        <label for="confirmPassword">Confirm Password:</label>
+                        <input type="password" id="confirmPassword" required>
+                        <p class="error" id="passwordError"></p>
+                    </div>
+
+                    <div class="form-section">
+                        <label for="street">Street Address:</label>
+                        <input type="text" id="street" required>
+
+                        <label for="city">City:</label>
+                        <input type="text" id="city" required>
+
+                        <label for="state">State:</label>
+                        <input type="text" id="state" required>
+
+                        <label for="zip">Zip Code:</label>
+                        <input type="text" id="zip" required>
+                    </div>
+                </div>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+
+                <button type="button" onclick="createUserJSON()">Submit</button>
+            </form>
+        </div>
+
+        <div class="permissions-container">
+            <h3>Permissions</h3>
+            <div class="toggle-container">
+                <label for="canEditUserInfo">Edit User Info</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="canEditUserInfo">
+                    <label for="canEditUserInfo"></label>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <label for="canCreateAssets">Create Assets</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="canCreateAssets">
+                    <label for="canCreateAssets"></label>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <label for="canCreateMetric">Create Metric</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="canCreateMetric">
+                    <label for="canCreateMetric"></label>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <label for="canFillMetric">Fill Metric</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="canFillMetric">
+                    <label for="canFillMetric"></label>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <label for="canFillAsset">Fill Asset</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="canFillAsset">
+                    <label for="canFillAsset"></label>
+                </div>
+            </div>
+            <div class="toggle-container">
+                <label for="canViewRecords">View Records</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="canViewRecords">
+                    <label for="canViewRecords"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>Generated JSON:</h3>
+    <pre id="output"></pre>
+
+    <script>
+        function createUserJSON() {
+            const user = {
+                id: 0,
+                firstName: document.getElementById("firstName").value,
+                lastName: document.getElementById("lastName").value,
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value,
+                email: document.getElementById("email").value,
+                street: document.getElementById("street").value,
+                city: document.getElementById("city").value,
+                state: document.getElementById("state").value,
+                zip: document.getElementById("zip").value,
+                permissions: {
+                    canEditUserInfo: document.getElementById("canEditUserInfo").checked,
+                    canCreateAssets: document.getElementById("canCreateAssets").checked,
+                    canCreateMetric: document.getElementById("canCreateMetric").checked,
+                    canFillMetric: document.getElementById("canFillMetric").checked,
+                    canFillAsset: document.getElementById("canFillAsset").checked,
+                    canViewRecords: document.getElementById("canViewRecords").checked
+                },
+                timestamp: new Date().toISOString(),
+                createdBy: 0
+            };
+    
+            document.getElementById("output").textContent = JSON.stringify(user, null, 4);
+        }
+    </script>
+
+</body>
+</html>

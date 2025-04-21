@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="../API_Functions/assets.js"></script>
+  <script src="../API_Functions/metrics.js"></script>
+  <title>Fill Metric</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #0d25dc;
+      color: #333;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    label, select, input, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="fill-metric-card">
+    <h2>Fill a Metric</h2>
+
+    <label for="asset">Select Asset</label>
+    <select id="asset">
+      <option value="">Loading assets...</option>
+    </select>
+
+    <label for="record">Select Record of Asset</label>
+    <select id="record" disabled>
+      <option value="">Select a record</option>
+    </select>
+
+    <label for="templateTitle">Select Metric to Fill</label>
+    <select id="templateTitle" disabled>
+      <option value="">Select a metric</option>
+    </select>
+
+    <div id="field-container"></div>
+    <button id="submitMetric-btn">Submit Metric</button>
+  </div>
+
+  <script>
+    async function initializeFillMetric() {
+      const assetDropdown    = document.getElementById('asset');
+      const recordDropdown   = document.getElementById('record');
+      const templateDropdown = document.getElementById('templateTitle');
+      const fieldsContainer  = document.getElementById('field-container');
+      const submitButton     = document.getElementById('submitMetric-btn');
+
+      let templates = [];
+      let metrics   = [];
+
+      // 1) Load all assets/templates
+      try {
+        templates = await getTemplates();
+      } catch (err) {
+        console.error('Error fetching templates:', err);
+      }
+
+      // Populate asset dropdown
+      assetDropdown.innerHTML = '<option value="">Select an asset</option>';
+      templates.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item._id;
+        opt.textContent = item.title;
+        assetDropdown.appendChild(opt);
+      });
+
+      // helper to reset record & metric selects
+      function resetRecordAndMetric() {
+        recordDropdown.innerHTML   = '<option value="">Select a record</option>';
+        recordDropdown.disabled    = true;
+        templateDropdown.innerHTML = '<option value="">Select a metric</option>';
+        templateDropdown.disabled  = true;
+        fieldsContainer.innerHTML  = '';
+      }
+      resetRecordAndMetric();
+
+      // 2) When asset is selected, fetch its records
+      assetDropdown.addEventListener('change', async () => {
+        const assetTitle = assetDropdown.options[assetDropdown.selectedIndex].text;
+        const assetId    = assetDropdown.value;
+
+        resetRecordAndMetric();
+        if (!assetId) return;
+
+        let records = [];
+        try {
+          records = await getRecordsbyTitle(assetTitle);
+        } catch (err) {
+          console.error('Error fetching records:', err);
+        }
+
+        recordDropdown.innerHTML = '<option value="">Select a record</option>';
+        records.forEach(rec => {
+          const o = document.createElement('option');
+          o.value       = rec._id;
+          o.textContent = rec.timestamp || rec._id;
+          recordDropdown.appendChild(o);
+        });
+        recordDropdown.disabled = false;
+      });
+
+      // 3) When record is selected, fetch its metrics by assetId
+      recordDropdown.addEventListener('change', async () => {
+        const assetId = assetDropdown.value;      // ← use assetId here
+        const recordId = recordDropdown.value;
+
+        templateDropdown.innerHTML = '<option value="">Select a metric</option>';
+        fieldsContainer.innerHTML  = '';
+        templateDropdown.disabled  = true;
+        metrics = [];
+
+        if (!recordId) return;
+
+        try {
+          // Pass assetId (first dropdown) into getMetricTemplatesByID
+          metrics = await getMetricTemplatesByID(assetId);
+        } catch (err) {
+          console.error('Error fetching metrics:', err);
+          return;
+        }
+
+        // Populate metric dropdown
+        metrics.forEach(m => {
+          const o = document.createElement('option');
+          o.value       = m._id;
+          o.textContent = m.MetricTitle;
+          templateDropdown.appendChild(o);
+        });
+        templateDropdown.disabled = false;
+      });
+
+      // 4) When metric is chosen, render its fields
+      templateDropdown.addEventListener('change', () => {
+        const metricId = templateDropdown.value;
+        fieldsContainer.innerHTML = '';
+        const selected = metrics.find(m => m._id === metricId);
+        if (!selected) return;
+        (selected.fieldValues || []).forEach(lbl => {
+          const inp = document.createElement('input');
+          inp.type        = 'text';
+          inp.placeholder = lbl;
+          inp.classList.add('form-field');
+          fieldsContainer.appendChild(inp);
+        });
+      });
+
+      async function sendToServer(payload)
+      {
+        let response = await addMetricRecord(payload);
+        return response;
+      }
+
+      // 5) Submit handler
+      submitButton.addEventListener('click', () => {
+        const assetId = assetDropdown.value;
+        const record  = recordDropdown.value;
+        const metric  = templateDropdown.value;
+        if (!assetId || !record || !metric) {
+          alert('Please select asset, record, and metric.');
+          return;
+        }
+        const values = Array.from(fieldsContainer.querySelectorAll('.form-field'))
+                            .map(i => i.value.trim());
+        if (values.some(v => !v)) {
+          alert('Please complete all fields.');
+          return;
+        }
+        const payload = {
+          "assetType" : assetId,
+          "record": record,
+          "metricID" : metric,
+          timestamp: new Date().toLocaleString(),
+          userId: 0,
+          fieldValues: values
+        };
+        
+        try {
+            const result = sendToServer(payload);
+            alert('Metric saved successfully!');
+        } catch (err) {
+            alert('Failed to save metric:\n' + err.message);
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initializeFillMetric);
+  </script>
+</body>
+</html>

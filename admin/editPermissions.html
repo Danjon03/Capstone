@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit User</title>
+  <style>
+           .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 25px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 25px;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 3.5px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+  </style>
+</head>
+<body>
+  <script src="../API_Functions/postRecords.js"></script>
+  <h1>Edit User Settings</h1>
+  <div id="user-info"></div>
+  
+  <div id="permissionsContainer"></div>
+
+  <button onclick="submitPermissions()">Submit</button>
+  <script>
+      async function fetchData(uid) {
+          const userData = await getUserByID(uid);
+          return userData.response;  // Make sure you return actual JSON data
+      }
+
+      async function initializeUser() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('param');
+        const user = await fetchData(userId);  // Wait for the data
+        console.log(user);  // Verify that user data is correctly fetched
+        createPermissionToggles(user);  // Pass it to the toggle function
+      }
+
+      initializeUser();  // Call the function to start fetching user data
+
+
+      
+      //then change all of the slider settings based on what the json data says it should be
+    
+      function createPermissionToggles(user) {
+            const container = document.getElementById("permissionsContainer");
+            container.innerHTML = ""; // Clear previous content
+
+            Object.entries(user.permissions).forEach(([key, value]) => {
+                // Create toggle container
+                const toggleDiv = document.createElement("div");
+                toggleDiv.classList.add("toggle-container");
+
+                // Label
+                const label = document.createElement("label");
+                label.textContent = key;
+
+                // Toggle Switch
+                const toggleSwitch = document.createElement("label");
+                toggleSwitch.classList.add("switch");
+
+                const input = document.createElement("input");
+                input.type = "checkbox";
+                input.checked = value; // Set based on permission value
+
+                // Toggle UI
+                const slider = document.createElement("span");
+                slider.classList.add("slider");
+
+                // Append elements
+                toggleSwitch.appendChild(input);
+                toggleSwitch.appendChild(slider);
+                toggleDiv.appendChild(label);
+                toggleDiv.appendChild(toggleSwitch);
+                container.appendChild(toggleDiv);
+            });
+        }
+
+    async function sendPermissionsToServer(id, permissions)
+    {
+        console.log(await updateUserPermissions(id, permissions));
+    }
+
+
+    function submitPermissions() {
+        const permissions = {}; // Initialize an empty dictionary
+        document.querySelectorAll('.toggle-container').forEach(toggle => {
+            const label = toggle.querySelector('label').textContent; // Get the label name
+            const isChecked = toggle.querySelector('input').checked; // Check if it's on or off
+            permissions[label] = isChecked; // Store in dictionary
+        });
+
+        console.log(permissions); // Display the dictionary (you can replace this with an API call)
+        
+        // You can send `permissions` to your server with a POST request if needed
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('param');
+        sendPermissionsToServer(userId, permissions);
+    }
+
+
+
+        
+  </script>
+</body>
+</html>

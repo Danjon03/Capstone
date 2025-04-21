@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="../API_Functions/postRecords.js"></script>
+  <script src="../API_Functions/metrics.js"></script>
+  <title>Create Metric</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .template-container {
+      background: white;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    .template-container label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .template-container select,
+    .template-container input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      border-radius: 4px;
+    }
+    .template-container .button-group {
+      margin-top: 15px;
+    }
+    .template-container button {
+      padding: 8px 12px;
+      margin-right: 10px;
+      margin-top: 10px;
+      background-color: #3e50d3;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .template-container button:hover {
+      background-color: #222e86;
+    }
+    .new-field {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .new-field input {
+      flex: 1;
+    }
+    .delete-button {
+      margin-left: 8px;
+      background: rgb(214,24,24);
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .delete-button:hover {
+      background: rgb(137,15,15);
+    }
+  </style>
+</head>
+<body>
+  <div class="template-container">
+    <label for="templateTitle">Choose an Asset:</label>
+    <select id="templateTitle">
+      <option value="">Select an Asset</option>
+    </select>
+
+    <div class="title-container">
+      <label for="title">Metric Title:</label>
+      <input type="text" id="title" placeholder="Enter title here">
+    </div>
+
+    <div class="button-group">
+      <button id="newField-btn">Add New Field</button>
+      <button id="clearFields-btn">Clear All Fields</button>
+    </div>
+
+    <div id="field-container"></div>
+
+    <button id="saveTemplate-btn">Save Template</button>
+  </div>
+
+  <script>
+    
+    async function initializeEverything()
+    {
+      const x = await getTemplates();
+      populateTemplateDropdown(x);
+      initializeCreateMetric();
+    }
+
+    
+
+
+    function populateTemplateDropdown(templatesData) {
+      const dropdown = document.getElementById('templateTitle');
+      templatesData.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t._id;           // value = _id
+        opt.textContent = t.title;
+        dropdown.appendChild(opt);
+      });
+    }
+
+    function initializeCreateMetric() {
+      const addNewFieldButton  = document.getElementById("newField-btn");
+      const fieldsContainer    = document.getElementById("field-container");
+      const clearFieldsButton  = document.getElementById("clearFields-btn");
+      const saveTemplateButton = document.getElementById("saveTemplate-btn");
+
+      addNewFieldButton.addEventListener("click", () => {
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("new-field");
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.classList.add("form-field");
+        input.placeholder = "Enter text here";
+
+        const del = document.createElement("button");
+        del.textContent = "X";
+        del.classList.add("delete-button");
+        del.addEventListener("click", () => wrapper.remove());
+
+        wrapper.append(input, del);
+        fieldsContainer.appendChild(wrapper);
+      });
+
+      clearFieldsButton.addEventListener("click", () => {
+        fieldsContainer.innerHTML = "";
+      });
+
+      saveTemplateButton.addEventListener("click", () => {
+        const title = document.getElementById("title").value.trim();
+        if (!title) {
+          alert("Error: Please enter a title before saving.");
+          return;
+        }
+
+        // get selected template _id
+        const selectedTemplateId = document.getElementById("templateTitle").value;
+        if (!selectedTemplateId) {
+          alert("Error: Please select a template from the dropdown.");
+          return;
+        }
+
+        // gather field values
+        const fieldValues = Array.from(
+          fieldsContainer.querySelectorAll(".form-field")
+        ).map(f => f.value.trim()).filter(v => v);
+
+        if (fieldValues.length === 0) {
+          alert("Error: Add at least one non-empty field.");
+          return;
+        }
+
+        // build your JSON object including templateId
+        const metricObj = {
+          MetricTitle: title,
+          timestamp: new Date().toLocaleString(),
+          userId: 0,
+          templateId: selectedTemplateId,
+          fieldValues: fieldValues
+        };
+
+        //Send metricObj to server
+        addMetricTemplate(metricObj);
+
+
+        console.log("Created metric object:", metricObj);
+
+
+        // clear form
+        fieldsContainer.innerHTML = "";
+        document.getElementById("title").value = "";
+        document.getElementById("templateTitle").value = "";
+        alert("Metric object created! Check console.");
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeEverything();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .user {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .user-info {
+      margin-right: 20px;
+    }
+    .edit-button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .edit-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="../API_Functions/postRecords.js"></script>
+  <h1>User List</h1>
+  <div id="user-list"></div>
+
+  <script>
+    // Function to render the user list
+    async function renderUserList() {
+      const userList = document.getElementById('user-list');
+      const users = await getUsers();
+
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+        const userDiv = document.createElement('div');
+        userDiv.classList.add('user');
+
+        const userInfo = document.createElement('div');
+        userInfo.classList.add('user-info');
+        userInfo.textContent = `${i}. ${user.name}`;
+
+        const editButton = document.createElement('button');
+        editButton.classList.add('edit-button');
+        editButton.textContent = 'Edit';
+        editButton.onclick = () => (window.location.href = "editPermissions.html?param=" + user.id);
+
+        userDiv.appendChild(userInfo);
+        userDiv.appendChild(editButton);
+        userList.appendChild(userDiv);
+      }
+    }
+
+    renderUserList();
+  </script>
+</body>
+</html>
