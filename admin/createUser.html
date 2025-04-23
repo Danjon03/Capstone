@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create User</title>
+    <script src="../API_Functions/postRecords.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -206,9 +207,6 @@
         </div>
     </div>
 
-    <h3>Generated JSON:</h3>
-    <pre id="output"></pre>
-
     <script>
         function createUserJSON() {
             const user = {
@@ -232,9 +230,13 @@
                 },
                 timestamp: new Date().toISOString(),
                 createdBy: 0
+            
+            
+            
+            
             };
     
-            document.getElementById("output").textContent = JSON.stringify(user, null, 4);
+            postUser(user);
         }
     </script>
 

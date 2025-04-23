@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Template Selector</title>
+  <script src="../API_Functions/postRecords.js"></script>
+  <script src="../API_Functions/metrics.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+    }
+    label, select, button {
+      display: block;
+      margin: 15px 0;
+    }
+    #actionButtons {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Select a Template</h2>
+
+  <label for="templateSelector">Choose Template:</label>
+  <select id="templateSelector">
+    <option value="">-- Select a Template --</option>
+  </select>
+
+  <div id="actionButtons">
+    <button id="downloadBtn">Download All Records</button>
+    <button id="viewRecordBtn">Select a Specific Record</button>
+  </div>
+
+  <script>
+    async function initializePage() {
+      const templateSelector = document.getElementById('templateSelector');
+      const actionButtons   = document.getElementById('actionButtons');
+  
+      try {
+        // 1. Populate template dropdown
+        const templates = await getTemplates();
+        templates.forEach(({ _id, title }) => {
+          const opt = document.createElement('option');
+          opt.value       = _id;
+          opt.textContent = title;
+          templateSelector.appendChild(opt);
+        });
+  
+        // 2. Show/hide template‐level buttons & clear old record UI
+        templateSelector.addEventListener('change', () => {
+          actionButtons.style.display = templateSelector.value ? 'block' : 'none';
+          const old = document.getElementById('recordContainer');
+          if (old) old.remove();
+        });
+  
+        // 3. Existing “Download All Records” logic for templates
+        document.getElementById('downloadBtn').addEventListener('click', async () => {
+          /* …your existing CSV‐download code for the selected template… */
+        });
+  
+        // 4. When “Select a Specific Record” is clicked…
+        document.getElementById('viewRecordBtn').addEventListener('click', async () => {
+          const tplId = templateSelector.value;
+          if (!tplId) return;
+  
+          // fetch the template’s title
+          const allTpls = await getTemplates();
+          const tpl     = allTpls.find(t => t._id === tplId);
+          const title   = tpl?.title || '';
+  
+          // fetch its records
+          const records = await getRecordsbyTitle(title);
+          if (!records.length) return alert('No records found for this template.');
+  
+          // remove any existing record UI
+          let container = document.getElementById('recordContainer');
+          if (container) container.remove();
+  
+          // build record‐selection container
+          container = document.createElement('div');
+          container.id = 'recordContainer';
+          container.style.marginTop = '20px';
+          actionButtons.insertAdjacentElement('afterend', container);
+  
+          container.innerHTML = `
+            <label for="recordSelector">Select a Record:</label>
+            <select id="recordSelector" style="display:block; margin-bottom:10px">
+              <option value="">-- Select a Record --</option>
+            </select>
+            <div id="metricContainer"></div>
+          `;
+  
+          // populate records
+          const recSel = document.getElementById('recordSelector');
+          records.forEach(r => {
+            const o = document.createElement('option');
+            o.value       = r._id;
+            o.id          = r._id;   // so selectedOptions[0].id === recordId
+            o.textContent = r._id;   // or e.g. r.timestamp
+            recSel.appendChild(o);
+          });
+  
+          // 5. On record change, build metric UI + download‐metrics button
+          recSel.addEventListener('change', async () => {
+            const recId = recSel.selectedOptions[0]?.id;
+            const metricContainer = document.getElementById('metricContainer');
+            metricContainer.innerHTML = '';
+            if (!recId) return;
+  
+            metricContainer.innerHTML = `
+              <label for="metricSelector">Select Metric:</label>
+              <select id="metricSelector" style="display:block; margin-bottom:10px">
+                <option value="">-- Select a Metric --</option>
+              </select>
+              <button id="downloadMetricDataBtn" style="display:none">
+                Download All Metric Data for this Record
+              </button>
+            `;
+  
+            const metricSel         = document.getElementById('metricSelector');
+            const downloadMetricBtn = document.getElementById('downloadMetricDataBtn');
+  
+            // fetch & populate metrics
+            try {
+              const tplId = templateSelector.value;
+              const metrics = await getMetricTemplatesByID(tplId);
+              metrics.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value       = m._id;
+                opt.textContent = m.name || m.title || m._id;
+                metricSel.appendChild(opt);
+              });
+            } catch (err) {
+              console.error('Error loading metrics:', err);
+              return alert('Failed to load metrics.');
+            }
+  
+            // show download button once a metric is chosen
+            metricSel.addEventListener('change', () => {
+              downloadMetricBtn.style.display = metricSel.value ? 'block' : 'none';
+            });
+  
+            // 6. Download all metric data for this record
+            downloadMetricBtn.addEventListener('click', async () => {
+              const metricId = metricSel.value;
+              if (!recId || !metricId) {
+                return alert('Please select both a record and a metric.');
+              }
+              try {
+                // fetch the metric‐records JSON
+                const metricRecords = await getMetricRecordsBySpeficRecord(recId, metricId);
+                if (!metricRecords.length) {
+                  return alert('No metric data found for this record and metric.');
+                }
+  
+                // build CSV header row
+                const headerSet = {};
+                metricRecords.forEach(r => Object.keys(r).forEach(k => headerSet[k] = true));
+                const headers = Object.keys(headerSet);
+                const rows = [ headers.join(',') ];
+  
+                // build CSV data rows
+                metricRecords.forEach(record => {
+                  const row = headers.map(h => {
+                    let val = record[h] !== undefined ? record[h] : '';
+                    if (typeof val === 'string') {
+                      val = val.replace(/"/g, '""');
+                      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                        val = `"${val}"`;
+                      }
+                    }
+                    return val;
+                  });
+                  rows.push(row.join(','));
+                });
+  
+                // trigger download
+                const csvString = rows.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href     = url;
+                a.download = `metricData_${recId}_${metricId}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+  
+              } catch (err) {
+                console.error('Error fetching metric records:', err);
+                alert('Failed to download metric data.');
+              }
+            });
+          });
+        });
+  
+      } catch (err) {
+        console.error('Error initializing page:', err);
+        alert('Initialization error – check console.');
+      }
+    }
+  
+    document.addEventListener('DOMContentLoaded', initializePage);
+  </script>
+  
+  
+  
+  
+</body>
+</html>

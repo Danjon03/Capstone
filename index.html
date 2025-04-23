@@ -127,12 +127,25 @@ add text to the top in between the buttons (instructions on how to use the progr
         <div class="button-container">
             <button class="menu-btn" onclick="navigateTo('assets')">Assets</button>
             <button class="menu-btn" onclick="navigateTo('metrics')">Metrics</button>
-            <button class="menu-btn" onclick="navigateTo('history')">History</button>
-            <button class="menu-btn" onclick="navigateTo('users')">Users</button>
+            <button class="menu-btn" onclick="navigateTo('History')">History</button>
+            <button class="menu-btn" onclick="navigateTo('admin')">Admin</button>
         </div>
     </div>
 
     <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Grab the span
+            const usernameSpan = document.getElementById('username');
+            // 2. Define the new name you want to show
+            let storedValue = localStorage.getItem("loggedInUserID");
+            storedValue = JSON.parse(storedValue); 
+            const newName = storedValue.firstName;    // ← change this to whatever you like
+            console.log(storedValue);
+            // 3. Update the span’s text
+            usernameSpan.textContent = newName;
+        });
+
         function navigateTo(page) {
             window.location.href = page + "/" + page + ".html";
         }

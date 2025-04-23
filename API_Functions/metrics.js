@@ -96,13 +96,27 @@ async function getMetricTemplatesByID(id) {
     //console.log(data);
     return data;      // ← now your async function actually returns the array
   }
-  
+
+async function getMetricRecordsBySpeficRecord(RecordID, MetricID)
+{
+    const url = 'http://localhost:3000/api/getMetricsByRecord';
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body:   JSON.stringify({ RecordID, MetricID })
+    });
+    
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    //console.log(data);
+    return data;      // ← now your async function actually returns the array
+}
 
 async function test()
 {
-    //console.log(await getMetricTemplates());
-    console.log(await getMetricTemplatesByID('6802d4d60e9af1b1c5ff023c'));
+    console.log(await getMetrics());
+    console.log(await getMetricRecordsBySpeficRecord('67fefa2e996707d09b81acb4', '68056b10b5a77f1cde9e3af6'));
 }
 
-//test();
+test();
 

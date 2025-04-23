@@ -298,6 +298,6 @@ let x =
   };
 
 //updateTemplate(id, x);
-//a();
+a();
 //postUser(x);
 

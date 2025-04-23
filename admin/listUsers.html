@@ -53,12 +53,12 @@
 
         const userInfo = document.createElement('div');
         userInfo.classList.add('user-info');
-        userInfo.textContent = `${i}. ${user.name}`;
+        userInfo.textContent = `${i}. ${user.firstName}`;
 
         const editButton = document.createElement('button');
         editButton.classList.add('edit-button');
         editButton.textContent = 'Edit';
-        editButton.onclick = () => (window.location.href = "editPermissions.html?param=" + user.id);
+        editButton.onclick = () => (window.location.href = "editPermissions.html?param=" + user._id);
 
         userDiv.appendChild(userInfo);
         userDiv.appendChild(editButton);

@@ -73,7 +73,8 @@
             else
             {
                 //create session cookie for newly logged in user
-                localStorage.setItem("loggedInUserID", result.response);
+                console.log(result);
+                localStorage.setItem("loggedInUserID", JSON.stringify(result));
                 
                 //redirect to the menu page
                 window.location.href = "index.html";
