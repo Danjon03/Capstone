@@ -154,18 +154,67 @@ http://localhost:8080/assets.html
 
     <!-- button row section -->
     <div class="asset-button-row">
-        <button class="asset-btn" onclick="navigateTo('createAsset')">Register</button>
-        <button class="asset-btn" onclick="navigateTo('createAsset')">Edit</button>
+        <button class="asset-btn" onclick="navigateTo('registerAsset')">Register</button>
+        <button class="asset-btn" onclick="navigateTo('editAsset')">Edit</button>
         <button class="asset-btn" onclick="navigateTo('fillAsset')">Fill</button>
     </div>
 
     <!-- dynamic view container -->
     <div id="view-container"></div>
 
+    <script src="../API_Functions/postRecords.js"></script>
+
     <script>
         function navigateTo(page) {
-            window.location.href =  page + ".html";
+            window.location.href = page + ".html";
         }
+
+        // function loadView(viewName) {
+        //     fetch(`${viewName}.html`)
+        //         .then(response => response.text())
+        //         .then(html => {
+        //             document.getElementById('view-container').innerHTML = html;
+
+        //             // Dynamically load script based on view name
+        //             let scriptName = "";
+
+        //             if (viewName === "registerAsset") {
+        //                 scriptName = "registerAsset.js";
+        //             } else if (viewName === "editAsset") {
+        //                 scriptName = "editAsset.js";
+        //             } else if (viewName === "fillAssets") {
+        //                 scriptName = "fillAssets.js";
+        //             }
+
+        //             if (scriptName) {
+        //                 const script = document.createElement("script");
+        //                 script.src = scriptName;
+        //                 script.onload = () => {
+        //                     const initializer = window[`initialize${capitalize(viewName.replace(/s$/, ''))}`];
+        //                     if (typeof initializer === "function") {
+        //                         initializer();
+        //                     }
+        //                 };
+        //                 document.body.appendChild(script);
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error("Failed to load view:", error);
+        //         });
+        // }
+
+        // function capitalize(str) {
+        //     return str.charAt(0).toUpperCase() + str.slice(1);
+        // }
+
+        // function resetView() {
+        //     loadView('assetPlaceholder');
+        // }
+
+        // // Load welcome view on page load
+        // window.addEventListener('DOMContentLoaded', () => {
+        //     resetView();
+        // });
     </script>
 
 </body>
