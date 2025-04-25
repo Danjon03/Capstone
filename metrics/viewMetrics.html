@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<!-- NEEDS TO BE FIXED -->
+<body>
+    <style>
+
+      body{
+        background-color: #0d25dc;
+      }
+
+
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+          
+        }
+        
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+
+        th{
+          background-color: white;
+        }
+        
+        tr:nth-child(even) {
+          background-color: #dddddd;
+        }
+        </style>
+
+    <div>
+        <div>
+        <!-- Select with options for the different assets to view records for -->
+          <select name="cars" id="cars">
+            <script>
+                // Sample data for existing assets in the database
+                const templates = [{'Name': 'DevicesTemplate', 'DeviceID': 0, 'DeviceName': 'Daniels Device', 'Operating Sytem': 'Windows', 'Brand': 'Dell'}, {"Name": "Car", "Info":"Stuff"}, {"Name": "Device", "Data":"Stuff"}, {"Name": "Legos", "Set#":"Stuff"} ];
+
+               //
+                for (let i = 0; i < templates.length; i++) {
+                    document.write("<option id=" + i + ">" + templates[i].Name + "</option>")
+                }
+
+                
+            </script>
+            
+          </select>
+
+          <button onClick=reloadPage() >Click Me!</button>
+
+
+</body>
+</html>
+
+
+<script>
+
+  function reloadPage() {
+  // Define Table
+
+  const existingTables = document.querySelectorAll("table");
+  existingTables.forEach((table) => table.remove());
+
+  const table = document.createElement("table");
+
+  // Get Select Element and Index
+  const selectElement = document.getElementById("cars");
+  const index = selectElement.options[selectElement.selectedIndex].id;
+
+  // Create First Row for Headers
+  const headerRow = table.insertRow();
+  for (const key in templates[index]) {
+    const headerCell = document.createElement("th");
+    headerCell.textContent = key;
+    headerRow.appendChild(headerCell);
+  }
+
+  // Populate Table Rows
+  for (const record in templates) {
+    if (templates[record].Name === selectElement.value) {
+      const row = table.insertRow(); // Start a new row
+      for (const object in templates[record]) {
+        const cell = row.insertCell();
+        cell.textContent = templates[record][object];
+      }
+    }
+  }
+
+  // Append Table to Document
+  document.body.appendChild(table);
+}
+
+</script>

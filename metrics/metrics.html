@@ -140,7 +140,7 @@ http://localhost:8080/metrics.html
     <!-- top bar section -->
     <div class="top-bar">
         <div class="top-bar-section left">
-            <button class="back-btn" onclick="back()">← Back to Main Menu</button>
+            <button class="back-btn" onclick="window.location.href='../index.html'">← Back to Main Menu</button>
         </div>
 
         <div class="top-bar-section center">
@@ -154,94 +154,65 @@ http://localhost:8080/metrics.html
 
     <!-- button row section -->
     <div class="metric-button-row">
-        <button class="metric-btn" onclick="createMetric()">Create</button>
-        <button class="metric-btn" onclick="editMetric()">Edit</button>
-        <button class="metric-btn" onclick="fillMetric()">Fill</button>
+        <button class="metric-btn" onclick="loadView('createMetric')">Create</button>
+        <button class="metric-btn" onclick="loadView('editMetric')">Edit</button>
+        <button class="metric-btn" onclick="loadView('fillMetrics')">Fill</button>
     </div>
 
     <!-- dynamic view container -->
     <div id="view-container"></div>
 
     <script>
-
-        function createMetric()
-        {
-            window.location.href = "createMetric.html";
+        function navigateTo(page) {
+            window.location.href = page + ".html";
         }
 
-        function fillMetric()
-        {
-            window.location.href = "fillMetric.html";
+        function loadView(viewName) {
+            fetch(`${viewName}.html`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('view-container').innerHTML = html;
+
+                    // Dynamically load script based on view name
+                    let scriptName = "";
+
+                    if (viewName === "createMetric") {
+                        scriptName = "createMetric.js";
+                    } else if (viewName === "editMetric") {
+                        scriptName = "editMetric.js";
+                    } else if (viewName === "fillMetrics") {
+                        scriptName = "fillMetrics.js";
+                    }
+
+                    if (scriptName) {
+                        const script = document.createElement("script");
+                        script.src = scriptName;
+                        script.onload = () => {
+                            const initializer = window[`initialize${capitalize(viewName.replace(/s$/, ''))}`];
+                            if (typeof initializer === "function") {
+                                initializer();
+                            }
+                        };
+                        document.body.appendChild(script);
+                    }
+                })
+                .catch(error => {
+                    console.error("Failed to load view:", error);
+                });
         }
 
-        function editMetric()
-        {
-            window.location.href = "editMetric.html";
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
-        function back()
-        {
-            window.location.href = "../index.html"
+        function resetView() {
+            loadView('metricPlaceholder');
         }
 
-
-
-
-
-
-
-
-
-        // function navigateTo(page) {
-        //     window.location.href = page + ".html";
-        // }
-
-        // function loadView(viewName) {
-        //     fetch(`${viewName}.html`)
-        //         .then(response => response.text())
-        //         .then(html => {
-        //             document.getElementById('view-container').innerHTML = html;
-
-        //             // Dynamically load script based on view name
-        //             let scriptName = "";
-
-        //             if (viewName === "createMetric") {
-        //                 scriptName = "createMetric.js";
-        //             } else if (viewName === "editMetric") {
-        //                 scriptName = "editMetric.js";
-        //             } else if (viewName === "fillMetrics") {
-        //                 scriptName = "fillMetrics.js";
-        //             }
-
-        //             if (scriptName) {
-        //                 const script = document.createElement("script");
-        //                 script.src = scriptName;
-        //                 script.onload = () => {
-        //                     const initializer = window[`initialize${capitalize(viewName.replace(/s$/, ''))}`];
-        //                     if (typeof initializer === "function") {
-        //                         initializer();
-        //                     }
-        //                 };
-        //                 document.body.appendChild(script);
-        //             }
-        //         })
-        //         .catch(error => {
-        //             console.error("Failed to load view:", error);
-        //         });
-        // }
-
-        // function capitalize(str) {
-        //     return str.charAt(0).toUpperCase() + str.slice(1);
-        // }
-
-        // function resetView() {
-        //     loadView('metricPlaceholder');
-        // }
-
-        // // Load welcome view on page load
-        // window.addEventListener('DOMContentLoaded', () => {
-        //     resetView();
-        // });
+        // Load welcome view on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            resetView();
+        });
     </script>
 
 </body>

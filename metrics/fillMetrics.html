@@ -1,0 +1,65 @@
+<!-- 
+fix styling - i want it to be centered
+
+
+-->
+
+<style>
+  .template-container {
+    background: white;
+    padding: 20px;
+    max-width: 600px;
+    margin: 40px auto;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .template-container select {
+    width: 100%;
+    padding: 5px;
+    margin: 10px 0;
+    font-size: 16px;
+  }
+
+  .form-field {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  #submitMetric-btn {
+    margin-top: 10px;
+    padding: 10px 16px;
+    background-color: #3e50d3;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  #submitMetric-btn:hover {
+    background-color: #222e86;
+  }
+</style>
+
+<div class="template-container">
+  <label for="asset">Choose a pre-existing asset:</label>
+  <select id="asset">
+    <option value="">Select asset</option>
+    <option value="car">Car</option>
+    <option value="device">Device</option>
+    <option value="employee">Employee</option>
+  </select>
+
+  <div class="title-container">
+    <label for="templateTitle">Choose a pre-existing template:</label>
+    <select id="templateTitle">
+      <option value="">Select a template</option>
+    </select>
+  </div>
+
+  <div id="field-container"></div> <!-- where input fields will be generated -->
+
+  <button id="submitMetric-btn">Submit</button>
+</div>
+
+

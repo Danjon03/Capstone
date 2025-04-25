@@ -1,263 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Edit Metric Template</title>
-  <style>
-    /* reuse styles from createMetric */
-    .template-container {
-      background: white;
-      padding: 20px;
-      max-width: 600px;
-      margin: 40px auto;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-    }
+<!-- 
+fix styling - i want it to be centered
+the add new field needs to have a gap in between the button
+remove hard coded assers and make it dynamic
 
-    .title-container select,
-    .title-container input,
-    #asset {
-      width: 100%;
-      padding: 5px;
-      margin: 10px 0;
-      font-size: 16px;
-    }
 
-    .new-field {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
+-->
 
-    .new-field input {
-      flex: 1;
-      padding: 5px;
-      margin-right: 10px;
-    }
+<style>
+  /* reuse styles from createMetric */
+  .template-container {
+    background: white;
+    padding: 20px;
+    max-width: 600px;
+    margin-top: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
 
-    .delete-button {
-      background: rgb(214, 24, 24);
-      color: white;
-      border: none;
-      font-size: 12px;
-      cursor: pointer;
-      padding: 5px 10px;
-    }
+  .title-container select,
+  .title-container input,
+  #asset {
+    width: 100%;
+    padding: 5px;
+    margin: 10px 0;
+    font-size: 16px;
+  }
 
-    .delete-button:hover {
-      background: rgb(137, 15, 15);
-    }
+  .new-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
 
-    #newField-btn,
-    #clearFields-btn,
-    #saveTemplate-btn {
-      margin-top: 10px;
-      margin-right: 10px;
-      padding: 8px 12px;
-      background-color: #3e50d3;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+  .new-field input {
+    flex: 1;
+    padding: 5px;
+    margin-right: 10px;
+  }
 
-    #newField-btn:hover,
-    #clearFields-btn:hover,
-    #saveTemplate-btn:hover {
-      background-color: #222e86;
-    }
+  .delete-button {
+    background: rgb(214, 24, 24);
+    color: white;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px 10px;
+  }
 
-    #deleteTemplate-btn {
-      margin-top: 10px;
-      margin-right: 10px;
-      padding: 8px 12px;
-      background-color: rgb(214, 24, 24);
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+  .delete-button:hover {
+    background: rgb(137, 15, 15);
+  }
 
-    #deleteTemplate-btn:hover {
-      background-color: rgb(137, 15, 15);
-    }
-  </style>
-</head>
-<body>
+  #newField-btn,
+  #saveTemplate-btn {
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 8px 12px;
+    background-color: #3e50d3;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  #newField-btn:hover,
+  #saveTemplate-btn:hover {
+    background-color: #222e86;
+  }
+
+  #deleteTemplate-btn {
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 8px 12px;
+    background-color: rgb(214, 24, 24);
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  #deleteTemplate-btn:hover {
+    background-color: rgb(137, 15, 15);
+  }
+</style>
 
 <div class="template-container">
   <label for="asset">Choose a pre-existing asset:</label>
   <select id="asset">
-    <option value="">Select asset</option>
-    <option value="car">Car</option>
-    <option value="device">Device</option>
-    <option value="employee">Employee</option>
+      <!-- hard coded values. eventually needs to be fixed so it is dynamic -->
+      <option value = "">Select asset</option>
+      <option value="car">Car</option>
+      <option value="device">Device</option>
+      <option value="employee">Employee</option>
   </select>
 
   <div class="title-container">
     <label for="templateTitle">Choose a pre-existing template:</label>
     <select id="templateTitle">
       <option value="">Select a template</option>
+      <!-- Options will be added dynamically -->
     </select>
   </div>
 
   <button id="newField-btn">Add New Field</button>
-  <button id="clearFields-btn">Clear All Fields</button>
 
-  <div id="field-container"></div>
+  <div id="field-container"></div> <!-- container for the dynamic fields -->
 
   <button id="saveTemplate-btn">Save Template</button>
   <button id="deleteTemplate-btn">Delete Template</button>
+  
 </div>
-
-<script>
-  function initializeEditMetric() {
-    console.log("initializeEditMetric is running");
-
-    const assetDropdown = document.getElementById("asset");
-    const templateDropdown = document.getElementById("templateTitle");
-    const addNewFieldButton = document.getElementById("newField-btn");
-    const fieldsContainer = document.getElementById("field-container");
-    const clearFieldsButton = document.getElementById("clearFields-btn");
-    const saveTemplateButton = document.getElementById("saveTemplate-btn");
-    const deleteTemplateButton = document.getElementById("deleteTemplate-btn");
-
-    let templateTitles = JSON.parse(localStorage.getItem("templateTitles")) || [];
-
-    addNewFieldButton.addEventListener("click", function () {
-      const fieldWrapper = document.createElement("div");
-      fieldWrapper.classList.add("new-field");
-
-      const newField = document.createElement("input");
-      newField.type = "text";
-      newField.classList.add("form-field");
-      newField.placeholder = "Enter text here";
-
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "X";
-      deleteButton.classList.add("delete-button");
-
-      deleteButton.addEventListener("click", function () {
-        fieldWrapper.remove();
-      });
-
-      fieldWrapper.appendChild(newField);
-      fieldWrapper.appendChild(deleteButton);
-      fieldsContainer.appendChild(fieldWrapper);
-    });
-
-    clearFieldsButton.addEventListener("click", function () {
-      fieldsContainer.innerHTML = "";
-    });
-
-    saveTemplateButton.addEventListener("click", function () {
-      try {
-        const title = templateDropdown.value.trim();
-        const asset = assetDropdown.value;
-
-        if (title === "") {
-          alert("Error: Please enter a template title.");
-          return;
-        }
-
-        const fieldValues = Array.from(fieldsContainer.querySelectorAll(".form-field"))
-          .map(field => field.value.trim())
-          .filter(value => value !== "");
-
-        if (fieldValues.length === 0) {
-          alert("Error: You must add at least one non-empty field before saving template.");
-          return;
-        }
-
-        templateTitles = templateTitles.filter(t => !(t.title === title && t.asset === asset));
-        templateTitles.push({ title, asset, fields: fieldValues });
-        localStorage.setItem("templateTitles", JSON.stringify(templateTitles));
-
-        fieldsContainer.innerHTML = "";
-        alert("Template updated successfully.");
-
-        loadView && loadView('editMetric'); // optional function
-      } catch (error) {
-        alert(error.message);
-      }
-    });
-
-    deleteTemplateButton.addEventListener("click", function () {
-      const selectedTitle = templateDropdown.value;
-      const selectedAsset = assetDropdown.value;
-
-      if (!selectedTitle || !selectedAsset) {
-        alert("Please select both an asset and a template to delete.");
-        return;
-      }
-
-      const confirmDelete = confirm(`Are you sure you want to delete the template "${selectedTitle}"?`);
-      if (!confirmDelete) return;
-
-      templateTitles = templateTitles.filter(
-        t => !(t.title === selectedTitle && t.asset === selectedAsset)
-      );
-
-      localStorage.setItem("templateTitles", JSON.stringify(templateTitles));
-
-      updateTemplateDropdownByAsset(selectedAsset);
-      fieldsContainer.innerHTML = "";
-
-      alert("Template deleted successfully.");
-    });
-
-    function updateTemplateDropdownByAsset(selectedAsset) {
-      templateDropdown.innerHTML = '<option value="">Select a template</option>';
-      const filteredTemplates = templateTitles.filter(t => t.asset === selectedAsset);
-      filteredTemplates.forEach(template => {
-        const option = document.createElement("option");
-        option.value = template.title;
-        option.textContent = template.title;
-        templateDropdown.appendChild(option);
-      });
-    }
-
-    templateDropdown.addEventListener("change", function () {
-      const selectedTemplate = templateTitles.find(
-        t => t.title === this.value && t.asset === assetDropdown.value
-      );
-      if (!selectedTemplate) return;
-
-      fieldsContainer.innerHTML = "";
-
-      selectedTemplate.fields.forEach(value => {
-        const fieldWrapper = document.createElement("div");
-        fieldWrapper.classList.add("new-field");
-
-        const newField = document.createElement("input");
-        newField.type = "text";
-        newField.classList.add("form-field");
-        newField.value = value;
-
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "X";
-        deleteButton.classList.add("delete-button");
-        deleteButton.addEventListener("click", () => fieldWrapper.remove());
-
-        fieldWrapper.appendChild(newField);
-        fieldWrapper.appendChild(deleteButton);
-        fieldsContainer.appendChild(fieldWrapper);
-      });
-    });
-
-    assetDropdown.addEventListener("change", function () {
-      const selectedAsset = this.value;
-      updateTemplateDropdownByAsset(selectedAsset);
-      fieldsContainer.innerHTML = "";
-    });
-
-    setTimeout(() => {
-      console.log("Resetting dropdowns now...");
-      assetDropdown.selectedIndex = 0;
-      templateDropdown.innerHTML = '<option value="">Select a template</option>';
-      fieldsContainer.innerHTML = "";
-    }, 0);
-  }
-
-  window.onload = initializeEditMetric;
-</script>
-
-</body>
-</html>
