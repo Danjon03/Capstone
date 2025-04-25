@@ -2,13 +2,10 @@
 <html lang="en">
 
 <!-- 
-
-python -m http.server 8080
-http://localhost:8080/index.html
-
-
-make buttons work 
+make all buttons work 
 add text to the top in between the buttons (instructions on how to use the program)
+
+dynamic username at the top of the page doesnt work - i dont care anymore
 
 -->
 
@@ -16,6 +13,9 @@ add text to the top in between the buttons (instructions on how to use the progr
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Page</title>
+
+    <!-- linking topBar.css from sharedComponents -->
+    <link rel="stylesheet" href="../sharedComponents/topBar.css">
 
     <style>
         html,
@@ -26,66 +26,23 @@ add text to the top in between the buttons (instructions on how to use the progr
             overflow: hidden;
         }
 
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: #222e86;
-            color: white;
-            height: 70px;
-            padding: 0 10px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        .top-bar-section {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .top-bar-section.left {
-            justify-content: flex-start;
-        }
-
-        .top-bar-section.right {
-            justify-content: flex-end;
-        }
-
         .top-title {
             font-size: 22px;
             margin: 0 auto;
             text-align: center;
         }
 
-        .logout-btn {
-            background-color: #9e1e1e;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-right: 20px;
-        }
-
         .content {
             position: fixed;
-            top: 70px;
-            /* matches height of top-bar */
+            top: 70px;  /* matches height of top-bar */
             left: 0;
             width: 100%;
             height: calc(100% - 70px);
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            /* removes scrolling */
+            overflow: hidden;   /* removes scrolling */
         }
-
 
         .button-container {
             display: flex;
@@ -102,6 +59,7 @@ add text to the top in between the buttons (instructions on how to use the progr
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 3px;
         }
 
         .menu-btn:hover {
@@ -127,25 +85,59 @@ add text to the top in between the buttons (instructions on how to use the progr
         <div class="button-container">
             <button class="menu-btn" onclick="navigateTo('assets')">Assets</button>
             <button class="menu-btn" onclick="navigateTo('metrics')">Metrics</button>
-            <button class="menu-btn" onclick="navigateTo('History')">History</button>
-            <button class="menu-btn" onclick="navigateTo('admin')">Admin</button>
+            <button class="menu-btn" onclick="navigateTo('history')">History</button>
+            <button class="menu-btn" onclick="navigateTo('users')">Users</button>
         </div>
     </div>
 
     <script>
+        // grabbing username from local storage
+        const userID = localStorage.getItem("loggedInUserID");
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // 1. Grab the span
-            const usernameSpan = document.getElementById('username');
-            // 2. Define the new name you want to show
-            let storedValue = localStorage.getItem("loggedInUserID");
-            storedValue = JSON.parse(storedValue); 
-            const newName = storedValue.firstName;    // ← change this to whatever you like
-            console.log(storedValue);
-            // 3. Update the span’s text
-            usernameSpan.textContent = newName;
-        });
+        // if exists
+        if (userID) {
+            // fetch it
+            fetch('/api/getUserByID', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: userID })
+            })
+                // update menu name
+                .then(res => res.json())
+                .then(data => {
 
+                    console.log("Fetched user data:", data);
+
+
+                    const name = data.response?.username || "User";
+                    document.getElementById("username").textContent = name + "!";
+                })
+                .catch(err => {
+                    console.error("Failed to load username:", err);
+                    document.getElementById("username").textContent = "User!";
+                });
+        } else {
+            // else sign them in as a guest
+            document.getElementById("username").textContent = "Guest!";
+        }
+
+
+
+        // // fetch username cookie and update welcome title
+        // fetch('/api/getUsernameFromCookie')
+        // .then(res => res.json())
+        // .then(data => {
+        //     if (data.username) {
+        //         document.getElementById("username").textContent = data.username + "!";
+        //     } else {
+        //         document.getElementById("username").textContent = "Guest!";
+        //     }
+        // })
+        // .catch(err => {
+        //     console.error("Error fetching username:", err);
+        // });
+
+        // navigation handling between pages
         function navigateTo(page) {
             window.location.href = page + "/" + page + ".html";
         }
